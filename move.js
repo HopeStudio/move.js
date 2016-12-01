@@ -162,6 +162,32 @@ var move = (function(window, undefined) {
 
     Math.TWEEN = TWEEN;
 
+    // 数组 indexOf 兼容性处理
+    if (!Array.prototype.indexOf) {
+        Array.prototype.indexOf = function (value) {
+            for (var index in this) {
+                if (this[index] === value) {
+                    return index;
+                }
+            }
+            return -1;
+        };
+    }
+
+    // 兼容性地设置透明度
+    var setOpacity = (function() {
+        if ('opacity' in document.body.style) {
+            return function(ele, val) {
+                ele.style.opacity = val;
+            }
+        } else {
+            return function(ele, val) {
+                ele.style.filter = 'alpha(opacity=' + val * 100 + ')';
+            }
+        }
+    })();
+
+    // requestAnimationFrame 兼容性处理
     (function() {
         var lastTime = 0;
         var vendors = ['webkit', 'moz'];
@@ -189,6 +215,7 @@ var move = (function(window, undefined) {
         }
     })();
 
+    // 获取元素的某个样式或者整个 style 对象
     function getStyle(element, prop) {
         if (prop) {
             if (document.defaultView && document.defaultView.getComputedStyle) {
@@ -206,6 +233,7 @@ var move = (function(window, undefined) {
         return element.style;
     }
 
+    // 合并多个对象
     function extend(obj) {
         for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
             rest[_key - 1] = arguments[_key];
@@ -224,10 +252,11 @@ var move = (function(window, undefined) {
         return obj;
     }
 
+    // 无需补全单位的样式属性
     var noSuffix = ['opacity', 'backgroundSize'];
 
     /**
-     * change 函数用于改变 ele 元素的样式
+     * changeStyle 函数用于改变 ele 元素的样式
      * @param ele
      * @param step
      *      width
@@ -237,19 +266,25 @@ var move = (function(window, undefined) {
      *      margin, marginTop, marginBottom, marginLeft, marginRight
      *      padding, paddingTop, paddingBottom, paddingLeft, paddingRight
      *      border, borderTop, borderBottom, borderLeft, borderRight
-     *      backgroundSize
+     *      backgroundSize(暂时只支持数值表示法，如：1 => 100%)
      */
-    function change(ele, step) {
+    function changeStyle(ele, step) {
         for (var prop in step) {
             if (noSuffix.indexOf(prop) + 1) {
-                ele.style[prop] = step[prop];
+                if (prop === 'backgroundSize') {
+                    ele.style[prop] = step[prop] + '%';
+                } else if(prop === 'opacity') {
+                    setOpacity(ele, step[prop]);
+                } else {
+                    ele.style[prop] = step[prop];
+                }
             } else {
                 ele.style[prop] = step[prop] + 'px';
             }
         }
     }
 
-    // 写在 DOM 类的原型上，但是 IE8- 不支持
+    // 现代浏览器下可以写在 HTMLElement 构造函数的原型上，但是 IE8- 不支持
     // HTMLElement.prototype.move = function(props, duration, complete) {
     //     let ele;
     //     if (this instanceof HTMLElement) {
@@ -288,24 +323,33 @@ var move = (function(window, undefined) {
                 processedProps[prop] = parseFloat(props[prop]);
                 original[prop] = parseFloat(getStyle(ele, prop));
             }
+            if (prop === 'backgroundSize') {
+                let backgroundSize = getStyle(ele, prop);
+                if (backgroundSize === 'auto') {
+                    original[prop] = 100;
+                } else {
+                    original[prop] = parseFloat(backgroundSize.replace('%', ''));
+                }
+                processedProps[prop] = props[prop].toString().indexOf('%') + 1 ? parseFloat(props[prop].replace('%', '')) : parseFloat(props[prop]) * 100;
+            }
         }
 
-        function exec() {
+        function main() {
             start++;
             var step = {};
             for (var _prop in processedProps) {
                 step[_prop] = fx(start, original[_prop], processedProps[_prop] - original[_prop], during);
             }
-            change(ele, step);
+            changeStyle(ele, step);
             if (start < during) {
-                requestAnimationFrame(exec);
+                requestAnimationFrame(main);
             }
             if (start === during && typeof complete === 'function') {
                 complete();
             }
         }
 
-        exec();
+        main();
     }
 
     return move;
