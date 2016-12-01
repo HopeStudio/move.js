@@ -35,7 +35,7 @@ Type：`Fcuntion`
 动画完毕时的回调函数
 
 ## TODO
-- [ ] 兼容至 IE9
+- [x] 兼容至 IE9
 - [x] 支持 `backgroundSize`
 - [x] 透明度动画兼容
 - [ ] Demo 完善，功能展示补全
