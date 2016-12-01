@@ -285,8 +285,8 @@ var move = (function(window, undefined) {
     }
 
     // 现代浏览器下可以写在 HTMLElement 构造函数的原型上，但是 IE8- 不支持
-    // HTMLElement.prototype.move = function(props, duration, complete) {
-    //     let ele;
+    // HTMLElement.prototype.move = function(props, duration, compvare) {
+    //     var ele;
     //     if (this instanceof HTMLElement) {
     //         ele = this;
     //     } else {
@@ -298,7 +298,7 @@ var move = (function(window, undefined) {
         var original = {};
 
         var fx = Math.TWEEN.linear;
-        var complete = null;
+        var compvare = null;
 
         for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
             rest[_key2 - 2] = arguments[_key2];
@@ -312,7 +312,7 @@ var move = (function(window, undefined) {
                 fx = Math.TWEEN[rest[index]];
             }
             if (typeof rest[index] === 'function') {
-                complete = rest[index];
+                compvare = rest[index];
             }
         }
 
@@ -324,7 +324,7 @@ var move = (function(window, undefined) {
                 original[prop] = parseFloat(getStyle(ele, prop));
             }
             if (prop === 'backgroundSize') {
-                let backgroundSize = getStyle(ele, prop);
+                var backgroundSize = getStyle(ele, prop);
                 if (backgroundSize === 'auto') {
                     original[prop] = 100;
                 } else {
@@ -344,8 +344,8 @@ var move = (function(window, undefined) {
             if (start < during) {
                 requestAnimationFrame(main);
             }
-            if (start === during && typeof complete === 'function') {
-                complete();
+            if (start === during && typeof compvare === 'function') {
+                compvare();
             }
         }
 
@@ -355,5 +355,5 @@ var move = (function(window, undefined) {
     return move;
 })(window, undefined);
 
-// 用法：move(element, propsObject[, duration][, fx][, completeCallback])
+// 用法：move(element, propsObject[, duration][, fx][, compvareCallback])
 // move($('#box'), {opacity: 0, width:'500px'}, 10000, 'easeInOutSine', function(){console.log('done')})

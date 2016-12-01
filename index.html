@@ -26,7 +26,7 @@
     <div>
         <br>
         <br>
-        // 用法：move(element, propsObject[, duration][, fx][, completeCallback])<br>
+        // 用法：move(element, propsObject[, duration][, fx][, compvareCallback])<br>
         // move($('#box'), {opacity: 0, width:'500px'}, 10000, 'easeInOutSine', function(){console.log('done')})
     </div>
     <form>
@@ -67,17 +67,17 @@
     <div id="box"></div>
     <script src="./move.js"></script>
     <script>
-        let box = document.querySelector('#box');
+        var box = document.querySelector('#box');
         document.querySelector('#trigger').addEventListener('click', function(e) {
-            let props = {};
+            var props = {};
             props[document.querySelector('#pxProps').value] = document.querySelector('#px').value;
             props[document.querySelector('#numProps').value] = document.querySelector('#num').value;
 
-            let time = parseFloat(document.querySelector('#time').value);
-            let fx = document.querySelector('#fx').value;
+            var time = parseFloat(document.querySelector('#time').value);
+            var fx = document.querySelector('#fx').value;
             this.disabled = true;
             document.querySelector('#init').disabled = true;
-            let that = this;
+            var that = this;
             move(box, props, time, fx, function() {
                 that.disabled = false;
                 document.querySelector('#init').disabled = false;
@@ -86,7 +86,7 @@
         }, false);
 
         document.querySelector('#init').addEventListener('click', function(e) {
-            let that = this;
+            var that = this;
             this.disabled = true;
             document.querySelector('#trigger').disabled = true;
             move(box, {width: 300, height: 300, opacity: 1}, parseFloat(document.querySelector('#time').value), document.querySelector('#fx').value, function() {
