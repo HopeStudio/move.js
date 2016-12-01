@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans">
+<head>
+    <meta charset="utf-8">
+    <meta content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width" name="viewport">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge, chrome=1">
+    <meta name="renderer" content="webkit">
+    <title>Hi!</title>
+    <script src="../utils-js/dist/utils.js"></script>
+    <style>
+        #box {
+            opacity: 1;
+            width: 300px;
+            height: 300px;
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        项目源码：<a href="https://github.com/yangfch3/move.js">move.js</a><br>
+        缓动函数列表：<a href="http://easings.net/zh-cn">easings</a>
+    </div>
+    <div>
+        <br>
+        <br>
+        // 用法：move(element, propsObject[, duration][, fx][, completeCallback])<br>
+        // move($('#box'), {opacity: 0, width:'500px'}, 10000, 'easeInOutSine', function(){console.log('done')})
+    </div>
+    <form>
+        <select name="pxProps" id="pxProps" size="1">
+            <option value="width">width</option>
+            <option value="height">height</option>
+            <option value="marginTop">marginTop</option>
+            <option disabled value="">以及一切有单位样式</option>
+        </select>
+        <select name="px" id="px" size="1">
+            <option value="100">100px</option>
+            <option value="1000">500px</option>
+            <option value="5000">800px</option>
+        </select>
+        <select name="numProps" id="numProps" size="1">
+            <option value="opacity">opacity</option>
+            <option disabled value="backgroundSize">以及一切无单位样式</option>
+        </select>
+        <select name="num" id="num" size="1">
+            <option value="0">0</option>
+            <option value="0.5">.5</option>
+            <option value="1">1</option>
+        </select>
+        <select name="time" id="time" size="1">
+            <option value="400">400 ms（默认）</option>
+            <option value="1000">1000 ms</option>
+            <option value="5000">5000 ms</option>
+        </select>
+        <select name="fx" id="fx" size="1">
+            <option value="linear">linear（默认）</option>
+            <option value="easeOutQuint">easeOutQuint</option>
+            <option value="easeInOutBounce">easeInOutBounce</option>
+            <option disabled>以及这个链接里所有的缓动函数 http://easings.net/zh-cn</option>
+        </select>
+        <input type="button" value="运行" id="trigger">
+    </form>
+    <div id="box"></div>
+    <script src="./move.js"></script>
+    <script>
+        let box = document.querySelector('#box');
+        document.querySelector('#trigger').addEventListener('click', function(e) {
+            let props = {};
+            props[document.querySelector('#pxProps').value] = document.querySelector('#px').value;
+            props[document.querySelector('#numProps').value] = document.querySelector('#num').value;
+
+            let time = parseFloat(document.querySelector('#time').value);
+            let fx = document.querySelector('#fx').value;
+            this.disabled = true;
+            let that = this;
+            move(box, props, time, fx, function() {
+                that.disabled = false;
+                console.log('done');
+            });
+        }, false)
+    </script>
+</body>
+</html>
