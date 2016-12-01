@@ -59,6 +59,7 @@
             <option disabled>以及这个链接里所有的缓动函数 http://easings.net/zh-cn</option>
         </select>
         <input type="button" value="运行" id="trigger">
+        <input type="button" value="重置" id="init">
     </form>
     <div id="box"></div>
     <script src="./move.js"></script>
@@ -72,12 +73,25 @@
             let time = parseFloat(document.querySelector('#time').value);
             let fx = document.querySelector('#fx').value;
             this.disabled = true;
+            document.querySelector('#init').disabled = true;
             let that = this;
             move(box, props, time, fx, function() {
                 that.disabled = false;
-                console.log('done');
+                document.querySelector('#init').disabled = false;
+                console.log('done!');
             });
-        }, false)
+        }, false);
+
+        document.querySelector('#init').addEventListener('click', function(e) {
+            let that = this;
+            this.disabled = true;
+            document.querySelector('#trigger').disabled = true;
+            move(box, {width: 300, height: 300, opacity: 1}, parseFloat(document.querySelector('#time').value), document.querySelector('#fx').value, function() {
+                that.disabled = false;
+                document.querySelector('#trigger').disabled = false;
+                console.log('init done!')
+            })
+        })
     </script>
 </body>
 </html>
