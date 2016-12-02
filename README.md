@@ -18,7 +18,9 @@ move(document.body, {
     opacity: 0.5
 })
 ```
-> CSS3 属性动画请直接使用 CSS3 实现。
+> CSS3 属性动画请直接使用 CSS3 实现；backgroundSize 可以使用百分数字符串也可以使用数值表示（1 == 100%）。
+> 
+> 查看支持哪些属性，请去往 [Demo](http://yangfch3.com/move.js/)。
 
 ### duration
 Type：`Number`
@@ -35,7 +37,6 @@ Type：`Fcuntion`
 动画完毕时的回调函数
 
 ## TODO
-- [x] 兼容至 IE9
-- [x] 支持 `backgroundSize`
-- [x] 透明度动画兼容
-- [ ] Demo 完善，功能展示补全
+- [x] 兼容至 ~IE8~ IE9（天猫和淘宝近期宣布放弃对 IE8 的支持，腾讯企业号和企业微信近期也决定放弃对 IE8 的支持）
+- [x] 支持 `backgroundSize` 百分字符串与数值两种值类型
+- [x] Demo 完善，功能展示补全

@@ -265,7 +265,7 @@ var move = (function(window, undefined) {
      *      left, right, top, bottom
      *      margin, marginTop, marginBottom, marginLeft, marginRight
      *      padding, paddingTop, paddingBottom, paddingLeft, paddingRight
-     *      border, borderTop, borderBottom, borderLeft, borderRight
+     *      borderWidth, borderTopWidth, borderBottomWidth, borderLeftWidth, borderRightWidth
      *      backgroundSize(暂时只支持数值表示法，如：1 => 100%)
      */
     function changeStyle(ele, step) {
