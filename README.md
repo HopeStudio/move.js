@@ -15,8 +15,12 @@ Type：`Object`
 ```javascript
 move(document.body, {
     width: 500,
-    opacity: 0.5
-})
+    // 单位 'px' 会自动补全，推荐直接使用数值
+    borderTopWidth: '100px',
+    opacity: 0.5,
+    // backgroundSize 可以使用百分数字符串（'110%'）也可以使用数值（1.1）表示
+    backgroundSize: 1.1
+});
 ```
 > CSS3 属性动画请直接使用 CSS3 实现；backgroundSize 可以使用百分数字符串也可以使用数值表示（1 == 100%）。
 > 
