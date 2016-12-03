@@ -241,6 +241,12 @@ var move = (function(window, undefined) {
             if (noSuffix.indexOf(prop) + 1) {
                 if (prop === 'backgroundSize') {
                     ele.style[prop] = step[prop] + '%';
+                } else if (prop.indexOf('scale') + 1) {
+                    transformStyle = (' ' + prop + '(' + step[prop] + ')');
+
+                    // 由于 transform 的属性值可能是多个变形函数，这里就牵涉到一个复写的问题了
+                    var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
+                    ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
                 } else {
                     ele.style[prop] = step[prop];
                 }
