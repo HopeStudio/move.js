@@ -1,14 +1,6 @@
 var move = (function(window, undefined) {
     "use strict";
 
-    /*
-     * Tween.js
-     * t: current time（当前时间）；
-     * b: beginning value（初始值）；
-     * c: change in value（变化量）；
-     * d: duration（持续时间）。
-     * you can visit 'http://easings.net/zh-cn' to get effect
-     */
     var TWEEN = {
         linear: function(t, b, c, d) {
             return c * t / d + b;
@@ -191,8 +183,7 @@ var move = (function(window, undefined) {
     })();
 
     // 获取元素的某个样式或者整个 style 对象
-    // TODO: 兼容性测试？
-    // 一个坑点：transfrom 获取到的是一个 matrix
+    // 注意点：transfrom 获取到的是一个 matrix
     function getStyle(element, prop) {
         if (prop === 'transform') {
             return element.style[prop];
@@ -213,28 +204,17 @@ var move = (function(window, undefined) {
         return element.style;
     }
 
-    // 无需补全单位的样式属性
+    // CSS3 变换函数列表
     var transform = {
         all: ['translateX', 'translateY', 'translateZ', 'rotate', 'rotateX', 'rotateY', 'rotateZ', 'scale', 'scaleX', 'scaleY', 'scaleZ', 'skew', 'skewX', 'skewY', 'perspective'],
         px: ['translateX', 'translateY', 'translateZ', 'perspective'],
         deg: ['rotate', 'rotateX', 'rotateY', 'rotateZ', 'skew', 'skewX', 'skewY'],
         none: ['scale', 'scaleX', 'scaleY', 'scaleZ']
     };
+
+    // 无需补全单位的样式属性
     var noSuffix = ['opacity', 'backgroundSize'].concat(transform.none);
 
-    /**
-     * changeStyle 函数用于改变 ele 元素的样式
-     * @param ele
-     * @param step
-     *      width
-     *      height
-     *      opacity
-     *      left, right, top, bottom
-     *      margin, marginTop, marginBottom, marginLeft, marginRight
-     *      padding, paddingTop, paddingBottom, paddingLeft, paddingRight
-     *      borderWidth, borderTopWidth, borderBottomWidth, borderLeftWidth, borderRightWidth
-     *      backgroundSize(暂时只支持数值表示法，如：1 => 100%)
-     */
     function changeStyle(ele, step) {
         var transformStyle = '';
         for (var prop in step) {
@@ -243,23 +223,17 @@ var move = (function(window, undefined) {
                     ele.style[prop] = step[prop] + '%';
                 } else if (prop.indexOf('scale') + 1) {
                     transformStyle = (' ' + prop + '(' + step[prop] + ')');
-
-                    // 由于 transform 的属性值可能是多个变形函数，这里就牵涉到一个复写的问题了
-                    var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
+                    var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g'); // 由于 transform 的属性值可能包含多个变形函数，这里就牵涉到一个复写的问题了
                     ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
                 } else {
                     ele.style[prop] = step[prop];
                 }
             } else if (transform.deg.indexOf(prop) + 1) {
                 transformStyle = (' ' + prop + '(' + step[prop] + 'deg)');
-
-                // 由于 transform 的属性值可能是多个变形函数，这里就牵涉到一个复写的问题了
                 var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
                 ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
             } else if (transform.px.indexOf(prop) + 1) {
                 transformStyle = (' ' + prop + '(' + step[prop] + 'px)');
-
-                // 由于 transform 的属性值可能是多个变形函数，这里就牵涉到一个复写的问题了
                 var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
                 ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
             } else {
@@ -268,14 +242,31 @@ var move = (function(window, undefined) {
         }
     }
 
-    // 运动框架主功能函数、
+    /**
+     * 运动框架主功能函数
+     * @param  {[HTMLElement]} ele   DOM元素
+     * @param  {[Object]} props 变化属性配置对象
+     *         width
+     *         height
+     *         opacity
+     *         left, right, top, bottom
+     *         margin, marginTop, marginBottom, marginLeft, marginRight
+     *         padding, paddingTop, paddingBottom, paddingLeft, paddingRight
+     *         borderWidth, borderTopWidth, borderBottomWidth, borderLeftWidth, borderRightWidth
+     *         backgroundSize
+     *         translateX, translateY, translateZ, rotate, rotateX, rotateY, rotateZ, scale, scaleX, scaleY, scaleZ, skew, skewX, skewY, perspective
+     */
+    
+    /**
+     * 可选参数: duration(number), fx(string), complete(function)
+     */
     function move(ele, props) {
         var start = 0;
-        var during = Math.ceil(400 / 16.67);
+        var during = Math.ceil(400 / 16.67); // 默认为 400ms，每 16.67ms 每帧
         var original = {};
 
         var fx = Math.TWEEN.linear;
-        var compvare = null;
+        var complete = null;
 
         for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
             rest[_key2 - 2] = arguments[_key2];
@@ -289,7 +280,7 @@ var move = (function(window, undefined) {
                 fx = Math.TWEEN[rest[index]];
             }
             if (typeof rest[index] === 'function') {
-                compvare = rest[index];
+                complete = rest[index];
             }
         }
 
@@ -337,8 +328,8 @@ var move = (function(window, undefined) {
             if (start < during) {
                 requestAnimationFrame(main);
             }
-            if (start === during && typeof compvare === 'function') {
-                compvare();
+            if (start === during && typeof complete === 'function') {
+                complete();
             }
         }
 
@@ -348,5 +339,5 @@ var move = (function(window, undefined) {
     return move;
 })(window, undefined);
 
-// 用法：move(element, propsObject[, duration][, fx][, compvareCallback])
+// 用法：move(element, propsObject[, duration][, fx][, completeCallback])
 // move($('#box'), {opacity: 0, width:'500px'}, 10000, 'easeInOutSine', function(){console.log('done')})
