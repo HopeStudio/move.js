@@ -162,31 +162,6 @@ var move = (function(window, undefined) {
 
     Math.TWEEN = TWEEN;
 
-    // 数组 indexOf 兼容性处理
-    if (!Array.prototype.indexOf) {
-        Array.prototype.indexOf = function (value) {
-            for (var index in this) {
-                if (this[index] === value) {
-                    return index;
-                }
-            }
-            return -1;
-        };
-    }
-
-    // 兼容性地设置透明度
-    var setOpacity = (function() {
-        if ('opacity' in document.body.style) {
-            return function(ele, val) {
-                ele.style.opacity = val;
-            }
-        } else {
-            return function(ele, val) {
-                ele.style.filter = 'alpha(opacity=' + val * 100 + ')';
-            }
-        }
-    })();
-
     // requestAnimationFrame 兼容性处理
     (function() {
         var lastTime = 0;
@@ -216,7 +191,12 @@ var move = (function(window, undefined) {
     })();
 
     // 获取元素的某个样式或者整个 style 对象
+    // TODO: 兼容性测试？
+    // 一个坑点：transfrom 获取到的是一个 matrix
     function getStyle(element, prop) {
+        if (prop === 'transform') {
+            return element.style[prop];
+        }
         if (prop) {
             if (document.defaultView && document.defaultView.getComputedStyle) {
                 return document.defaultView.getComputedStyle(element, null)[prop];
@@ -233,27 +213,14 @@ var move = (function(window, undefined) {
         return element.style;
     }
 
-    // 合并多个对象
-    function extend(obj) {
-        for (var _len = arguments.length, rest = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            rest[_key - 1] = arguments[_key];
-        }
-
-        if (rest.length > 0) {
-            if (Object.assign) {
-                return Object.assign.apply(Object, rest);
-            }
-            each(rest, function(restItem) {
-                each(restItem, function(value, key) {
-                    obj[key] = value;
-                });
-            });
-        }
-        return obj;
-    }
-
     // 无需补全单位的样式属性
-    var noSuffix = ['opacity', 'backgroundSize'];
+    var transform = {
+        all: ['translateX', 'translateY', 'translateZ', 'rotate', 'rotateX', 'rotateY', 'rotateZ', 'scale', 'scaleX', 'scaleY', 'scaleZ', 'skew', 'skewX', 'skewY', 'perspective'],
+        px: ['translateX', 'translateY', 'translateZ', 'perspective'],
+        deg: ['rotate', 'rotateX', 'rotateY', 'rotateZ', 'skew', 'skewX', 'skewY'],
+        none: ['scale', 'scaleX', 'scaleY', 'scaleZ']
+    };
+    var noSuffix = ['opacity', 'backgroundSize'].concat(transform.none);
 
     /**
      * changeStyle 函数用于改变 ele 元素的样式
@@ -269,29 +236,33 @@ var move = (function(window, undefined) {
      *      backgroundSize(暂时只支持数值表示法，如：1 => 100%)
      */
     function changeStyle(ele, step) {
+        var transformStyle = '';
         for (var prop in step) {
             if (noSuffix.indexOf(prop) + 1) {
                 if (prop === 'backgroundSize') {
                     ele.style[prop] = step[prop] + '%';
-                } else if(prop === 'opacity') {
-                    setOpacity(ele, step[prop]);
                 } else {
                     ele.style[prop] = step[prop];
                 }
+            } else if (transform.deg.indexOf(prop) + 1) {
+                transformStyle = (' ' + prop + '(' + step[prop] + 'deg)');
+
+                // 由于 transform 的属性值可能是多个变形函数，这里就牵涉到一个复写的问题了
+                var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
+                ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
+            } else if (transform.px.indexOf(prop) + 1) {
+                transformStyle = (' ' + prop + '(' + step[prop] + 'px)');
+
+                // 由于 transform 的属性值可能是多个变形函数，这里就牵涉到一个复写的问题了
+                var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
+                ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
             } else {
                 ele.style[prop] = step[prop] + 'px';
             }
         }
     }
 
-    // 现代浏览器下可以写在 HTMLElement 构造函数的原型上，但是 IE8- 不支持
-    // HTMLElement.prototype.move = function(props, duration, compvare) {
-    //     var ele;
-    //     if (this instanceof HTMLElement) {
-    //         ele = this;
-    //     } else {
-    //         return false;
-    //     }
+    // 运动框架主功能函数、
     function move(ele, props) {
         var start = 0;
         var during = Math.ceil(400 / 16.67);
@@ -316,23 +287,39 @@ var move = (function(window, undefined) {
             }
         }
 
-        // 预处理 props 统一去掉单位
-        var processedProps = {};
-        for (var prop in props) {
-            if (typeof props[prop] === 'number' || /(\d+|\d*\.\d*)/.test(props[prop])) {
-                processedProps[prop] = parseFloat(props[prop]);
-                original[prop] = parseFloat(getStyle(ele, prop));
-            }
-            if (prop === 'backgroundSize') {
-                var backgroundSize = getStyle(ele, prop);
-                if (backgroundSize === 'auto') {
-                    original[prop] = 100;
-                } else {
-                    original[prop] = parseFloat(backgroundSize.replace('%', ''));
+        var processedProps = (function () {
+            var processedProps = {};
+            for (var prop in props) {
+                if (typeof props[prop] === 'number' || /[-]?(\d+|\d*\.\d*)/.test(props[prop])) {
+                    // 统一去掉单位
+                    processedProps[prop] = parseFloat(props[prop]);
+                    
+                    // prop 不属于 CSS3 transform 函数时正常处理
+                    if (!(transform.all.indexOf(prop) + 1)) {
+                        original[prop] = parseFloat(getStyle(ele, prop));
+                    } 
                 }
-                processedProps[prop] = props[prop].toString().indexOf('%') + 1 ? parseFloat(props[prop].replace('%', '')) : parseFloat(props[prop]) * 100;
-            }
-        }
+                // backgroundSize 可能是百分数
+                if (prop === 'backgroundSize') {
+                    var backgroundSize = getStyle(ele, prop);
+                    // backgroundSize 的原始值可能是 auto
+                    if (backgroundSize === 'auto') {
+                        original[prop] = 100;
+                    } else {
+                        original[prop] = parseFloat(backgroundSize.replace('%', ''));
+                    }
+                    processedProps[prop] = props[prop].toString().indexOf('%') + 1 ? parseFloat(props[prop].replace('%', '')) : parseFloat(props[prop]) * 100;
+                }
+                // 针对 CSS3 transform 各个转换函数做特殊处理
+                if (transform.all.indexOf(prop) + 1) {
+                    var transformStyle = getStyle(ele, 'transform').replace(/\)/g, '').split(/\(|\s+/);
+                    var index = transformStyle.indexOf(prop);
+                    original[prop] = parseFloat(transformStyle[index + 1]) || (prop.indexOf('scale') + 1 ? 1 : 0);
+                }
+            } 
+
+            return processedProps;
+        })();
 
         function main() {
             start++;
