@@ -94,3 +94,6 @@ move.scroll(document.body.scrollHeight, 'easeInOutExpo');
 - [x] 支持 CSS3 属性动画
 - [x] 添加页面滚动动画支持 `move.scroll()`
 - [x] 支持多个元素同时运动 `move.each()`
+
+---
+如果这个运动框架帮助你更高效地开发，希望你能回来这里点个 Star！
