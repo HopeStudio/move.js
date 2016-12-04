@@ -1,6 +1,15 @@
 # move.js
 一个轻量型 DOM 动画框架
 
+## 特性
+1. 无外部库依赖
+2. 参数灵活且友好
+3. 动画流畅，保证 60 帧每秒
+4. 支持 http://easings.net/zh-cn 上所有的缓动特效
+5. 支持多个元素同时运动
+6. 支持动画完结回调，实现链式动画
+7. 支持 CSS3 transform 动画
+
 ## 主函数：move(element, props[, duration][, fx][, complete])
 对可选参数的先后顺序无要求，但对数据类型有要求。
 
@@ -43,6 +52,20 @@ Type：`Fucntion`
 
 动画完毕时的回调函数，**可以借助回调函数实现链式动画**。
 
+## 多个元素同时运动
+有两种方式帮助我们实现多个元素同时运动
+```javascript
+// 方式1：#a, #b, #c 同时运动
+move($('#a'), {width: 300});
+move($('#b'), {width: 1000});
+move($('#c'), {opacity: .5});
+```
+
+```javascript
+// 方式2：类名为 .box 所有元素同时运动
+move.each(document.getElementsByClassName('.box'), {width: 1000, opacity: 0.5});
+```
+
 ## 扩展：CSS3 动画
 框架支持 CSS3 transform 动画（见 [Demo](http://yangfch3.com/move.js/index_css3.html)），但是是有条件地支持：
 
@@ -70,3 +93,4 @@ move.scroll(document.body.scrollHeight, 'easeInOutExpo');
 - [x] Demo 完善，功能展示补全
 - [x] 支持 CSS3 属性动画
 - [x] 添加页面滚动动画支持 `move.scroll()`
+- [x] 支持多个元素同时运动 `move.each()`

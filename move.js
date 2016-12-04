@@ -1,6 +1,4 @@
 var move = (function(window, undefined) {
-    "use strict";
-
     var TWEEN = {
         linear: function(t, b, c, d) {
             return c * t / d + b;
@@ -261,6 +259,10 @@ var move = (function(window, undefined) {
      * 可选参数: duration(number), fx(string), complete(function)
      */
     function move(ele, props) {
+        if (!(ele instanceof HTMLElement)) {
+            return 'move(): 第一个参数必须为 DOM 元素';
+        }
+
         var start = 0;
         var during = Math.ceil(400 / 16.67); // 默认为 400ms，每 16.67ms 每帧
         var original = {};
@@ -273,7 +275,7 @@ var move = (function(window, undefined) {
         }
 
         for (var index in rest) {
-            if (typeof rest[index] === 'number') {
+            if (typeof rest[index] === 'number' && rest[index] > 0) {
                 during = Math.ceil(rest[index] / 16.67);
             }
             if (typeof rest[index] === 'string' && rest[index] in Math.TWEEN) {
@@ -377,7 +379,24 @@ var move = (function(window, undefined) {
         }
 
         main();
-    }
+    };
+
+    move.each = function(eles, props) {
+        for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+            rest[_key2 - 2] = arguments[_key2];
+        }
+        if (eles.length >= 1) {
+            var eleArr = Array.prototype.slice.call(eles);
+            for (var index in eleArr) {
+                move.apply(null, [eleArr[index], props].concat(rest));
+            }
+        } else if (eles) {
+            return move.apply(null, [eles, props].concat(rest));
+        } else {
+            return false;
+        }
+        
+    };
 
     return move;
 })(window, undefined);
