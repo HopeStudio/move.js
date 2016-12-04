@@ -33,7 +33,7 @@ Type：`Number`
 动画耗时，默认为 400ms
 
 ### fx
-Type：String
+Type：`String`
 
 缓动函数名，默认为匀速线性变化，所有支持的缓动函数名称见：[http://easings.net/zh-cn](http://easings.net/zh-cn)
 > 注：缓动函数全部存储在 Math.TWEEN 属性对象上，打开控制台打印 Math.TWEEN 查看详情。
