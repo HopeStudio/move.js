@@ -336,6 +336,49 @@ var move = (function(window, undefined) {
         main();
     }
 
+    move.scroll = function(target) {
+        var start = 0;
+        var during = Math.ceil(400 / 16.67); // 默认为 400ms，每 16.67ms 每帧
+        var original = document.body.scrollTop || window.scrollY;
+
+        var fx = Math.TWEEN.linear;
+        var complete = null;
+
+        for (var _len1 = arguments.length, rest = Array(_len1 > 1 ? _len1 - 1 : 0), _key1 = 1; _key1 < _len1; _key1++) {
+            rest[_key1 - 1] = arguments[_key1];
+        }
+
+        for (var index in rest) {
+            if (typeof rest[index] === 'number') {
+                during = Math.ceil(rest[index] / 16.67);
+            }
+            if (typeof rest[index] === 'string' && rest[index] in Math.TWEEN) {
+                fx = Math.TWEEN[rest[index]];
+            }
+            if (typeof rest[index] === 'function') {
+                complete = rest[index];
+            }
+        }
+
+        function main() {
+            start++;
+            var step = fx(start, original, target - original, during);
+            if (document.body.scrollTop + 1) {
+                document.body.scrollTop = step;
+            } else {
+                window.scrollY = step;
+            }
+            if (start < during) {
+                requestAnimationFrame(main);
+            }
+            if (start === during && typeof complete === 'function') {
+                complete();
+            }
+        }
+
+        main();
+    }
+
     return move;
 })(window, undefined);
 
