@@ -220,20 +220,20 @@ var move = (function(window, undefined) {
                 if (prop === 'backgroundSize') {
                     ele.style[prop] = step[prop] + '%';
                 } else if (prop.indexOf('scale') + 1) {
-                    transformStyle = (' ' + prop + '(' + step[prop] + ')');
-                    var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g'); // 由于 transform 的属性值可能包含多个变形函数，这里就牵涉到一个复写的问题了
-                    ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
+                    transformStyle = (prop + '(' + step[prop] + ')');
+                    var exp = new RegExp('\\s?' + prop + '\\([\\w\\W]+?\\)', 'g'); // 由于 transform 的属性值可能包含多个变形函数，这里就牵涉到一个复写的问题了
+                    ele.style.transform = (ele.style.transform || '').replace(exp, '') + transformStyle;
                 } else {
                     ele.style[prop] = step[prop];
                 }
             } else if (transform.deg.indexOf(prop) + 1) {
-                transformStyle = (' ' + prop + '(' + step[prop] + 'deg)');
-                var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
-                ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
+                transformStyle = (prop + '(' + step[prop] + 'deg)');
+                var exp = new RegExp('\\s?' + prop + '\\([\\w\\W]+?\\)', 'g');
+                ele.style.transform = (ele.style.transform || '').replace(exp, '') + transformStyle;
             } else if (transform.px.indexOf(prop) + 1) {
-                transformStyle = (' ' + prop + '(' + step[prop] + 'px)');
-                var exp = new RegExp(prop + '\\([\\w\\W]+?\\)', 'g');
-                ele.style.transform = ele.style.transform.replace(exp, '') + transformStyle;
+                transformStyle = (prop + '(' + step[prop] + 'px)');
+                var exp = new RegExp('\\s?' + prop + '\\([\\w\\W]+?\\)', 'g');
+                ele.style.transform = (ele.style.transform || '').replace(exp, '') + transformStyle;
             } else {
                 ele.style[prop] = step[prop] + 'px';
             }
