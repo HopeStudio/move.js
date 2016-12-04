@@ -385,13 +385,28 @@ var move = (function(window, undefined) {
         for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
             rest[_key2 - 2] = arguments[_key2];
         }
+        // 剔出回调函数
+        // 当传入了多个回调函数时，只会取最后一个
+        var complete = null;
+        var start = 0;
+        for (var i in rest) {
+            if (typeof rest[i] === 'function') {
+                complete = rest.splice(i, 1)[0];
+            }
+        }
         if (eles.length >= 1) {
             var eleArr = Array.prototype.slice.call(eles);
-            for (var index in eleArr) {
-                move.apply(null, [eleArr[index], props].concat(rest));
+            for (var j in eleArr) {
+                move.apply(null, [eleArr[j], props].concat(rest).concat(function() {
+                    start++;
+                    // 只有当每个元素的动画都执行完成时才能执行回调函数
+                    if (start === eles.length && typeof complete === 'function') {
+                        complete();
+                    }
+                }));
             }
         } else if (eles) {
-            return move.apply(null, [eles, props].concat(rest));
+            return move.apply(null, [eles, props].concat(rest).concat(complete));
         } else {
             return false;
         }

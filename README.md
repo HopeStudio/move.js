@@ -64,6 +64,10 @@ move($('#c'), {opacity: .5});
 ```javascript
 // 方式2：类名为 .box 所有元素同时运动
 move.each(document.getElementsByClassName('.box'), {width: 1000, opacity: 0.5});
+// 支持回调
+move.each($$('div'), {opacity: 0.5}, 1000, function() {
+  move.each(document.getElementsByTagName('DIV'), {height: 100, opacity: 1, marginTop: 20}, 1000)
+});
 ```
 
 ## 扩展：CSS3 动画
