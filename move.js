@@ -311,7 +311,7 @@ var move = (function(window, undefined) {
                 }
                 // 针对 CSS3 transform 各个转换函数做特殊处理
                 if (transform.all.indexOf(prop) + 1) {
-                    var transformStyle = getStyle(ele, 'transform').replace(/\)/g, '').split(/\(|\s+/);
+                    var transformStyle = (getStyle(ele, 'transform') || '').replace(/\)/g, '').split(/\(|\s+/);
                     var index = transformStyle.indexOf(prop);
                     original[prop] = parseFloat(transformStyle[index + 1]) || (prop.indexOf('scale') + 1 ? 1 : 0);
                 }

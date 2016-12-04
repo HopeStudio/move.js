@@ -70,13 +70,14 @@ move.each($$('div'), {opacity: 0.5}, 1000, function() {
 });
 ```
 
-## 扩展：CSS3 动画
+## 扩展：CSS3 动画（仅支持到 IE10）
 框架支持 CSS3 transform 动画（见 [Demo](http://yangfch3.com/move.js/index_css3.html)），但是是有条件地支持：
 
 1. 框架**只获取与解析你在 DOM 元素的 style 属性内声明的 transform 属性**，写在 CSS 文件内的 transform 属性不获取
 2. 支持的变形函数：`translateX` `translateY` `translateZ` `rotate` `rotateX` `rotateY` `rotateZ` `scale` `scaleX` `scaleY` `scaleZ` `skew` `skewX` `skewY` `perspective`
 
 > 现代浏览器获取计算后的 transform 时返回的是一个 matrix() 函数，处理提取起来比较困难，所以本框架默认支持提取与解析 DOM 元素 style 属性内的 transform 属性。所以，如果你对 CSS3 动画及其性能有较高要求，请直接使用 CSS3 原生动画。
+> IE9 的 transform 无法正常回去，故不考虑支持。
 
 ## 页面滚动动画：move.scroll(target[, duration][, fx][, completeCallback])
 例如：滚动至页面顶部
