@@ -1,5 +1,16 @@
-var move = (function(window, undefined) {
-    var TWEEN = {
+(function(window, undefined) {
+    // CSS3 变换函数列表
+    var transform = {
+        all: ['translateX', 'translateY', 'translateZ', 'rotate', 'rotateX', 'rotateY', 'rotateZ', 'scale', 'scaleX', 'scaleY', 'scaleZ', 'skew', 'skewX', 'skewY', 'perspective'],
+        px: ['translateX', 'translateY', 'translateZ', 'perspective'],
+        deg: ['rotate', 'rotateX', 'rotateY', 'rotateZ', 'skew', 'skewX', 'skewY'],
+        none: ['scale', 'scaleX', 'scaleY', 'scaleZ']
+    };
+
+    // 无需补全单位的样式属性
+    var noSuffix = ['opacity', 'backgroundSize'].concat(transform.none);
+
+    var TWEEN = Math.TWEEN = {
         linear: function(t, b, c, d) {
             return c * t / d + b;
         },
@@ -150,8 +161,6 @@ var move = (function(window, undefined) {
         }
     };
 
-    Math.TWEEN = TWEEN;
-
     // requestAnimationFrame 兼容性处理
     (function() {
         var lastTime = 0;
@@ -180,8 +189,6 @@ var move = (function(window, undefined) {
         }
     })();
 
-    // 获取元素的某个样式或者整个 style 对象
-    // 注意点：transfrom 获取到的是一个 matrix
     function getStyle(element, prop) {
         if (prop === 'transform') {
             return element.style[prop];
@@ -202,16 +209,8 @@ var move = (function(window, undefined) {
         return element.style;
     }
 
-    // CSS3 变换函数列表
-    var transform = {
-        all: ['translateX', 'translateY', 'translateZ', 'rotate', 'rotateX', 'rotateY', 'rotateZ', 'scale', 'scaleX', 'scaleY', 'scaleZ', 'skew', 'skewX', 'skewY', 'perspective'],
-        px: ['translateX', 'translateY', 'translateZ', 'perspective'],
-        deg: ['rotate', 'rotateX', 'rotateY', 'rotateZ', 'skew', 'skewX', 'skewY'],
-        none: ['scale', 'scaleX', 'scaleY', 'scaleZ']
-    };
-
-    // 无需补全单位的样式属性
-    var noSuffix = ['opacity', 'backgroundSize'].concat(transform.none);
+    // 获取元素的某个样式或者整个 style 对象
+    // 注意点：transfrom 获取到的计算值是一个 matrix，比较难处理
 
     function changeStyle(ele, step) {
         var transformStyle = '';
@@ -240,181 +239,185 @@ var move = (function(window, undefined) {
         }
     }
 
-    /**
-     * 运动框架主功能函数
-     * @param  {[HTMLElement]} ele   DOM元素
-     * @param  {[Object]} props 变化属性配置对象
-     *         width
-     *         height
-     *         opacity
-     *         left, right, top, bottom
-     *         margin, marginTop, marginBottom, marginLeft, marginRight
-     *         padding, paddingTop, paddingBottom, paddingLeft, paddingRight
-     *         borderWidth, borderTopWidth, borderBottomWidth, borderLeftWidth, borderRightWidth
-     *         backgroundSize
-     *         translateX, translateY, translateZ, rotate, rotateX, rotateY, rotateZ, scale, scaleX, scaleY, scaleZ, skew, skewX, skewY, perspective
-     */
-    
-    /**
-     * 可选参数: duration(number), fx(string), complete(function)
-     */
-    function move(ele, props) {
-        if (!(ele instanceof HTMLElement)) {
-            return 'move(): 第一个参数必须为 DOM 元素';
-        }
-
-        var start = 0;
-        var during = Math.ceil(400 / 16.67); // 默认为 400ms，每 16.67ms 每帧
-        var original = {};
-
-        var fx = Math.TWEEN.linear;
-        var complete = null;
-
-        for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
-            rest[_key2 - 2] = arguments[_key2];
-        }
-
-        for (var index in rest) {
-            if (typeof rest[index] === 'number' && rest[index] > 0) {
-                during = Math.ceil(rest[index] / 16.67);
+    var move = (function() {
+        /**
+         * 运动框架主功能函数
+         * @param  {[HTMLElement]} ele   DOM元素
+         * @param  {[Object]} props 变化属性配置对象
+         *         width
+         *         height
+         *         opacity
+         *         left, right, top, bottom
+         *         margin, marginTop, marginBottom, marginLeft, marginRight
+         *         padding, paddingTop, paddingBottom, paddingLeft, paddingRight
+         *         borderWidth, borderTopWidth, borderBottomWidth, borderLeftWidth, borderRightWidth
+         *         backgroundSize
+         *         translateX, translateY, translateZ, rotate, rotateX, rotateY, rotateZ, scale, scaleX, scaleY, scaleZ, skew, skewX, skewY, perspective
+         */
+        /**
+         * 可选参数: duration(number), fx(string), complete(function)
+         */
+        var Move = function(ele, props) {
+            if (!(ele instanceof HTMLElement)) {
+                return 'move(): 第一个参数必须为 DOM 元素';
             }
-            if (typeof rest[index] === 'string' && rest[index] in Math.TWEEN) {
-                fx = Math.TWEEN[rest[index]];
-            }
-            if (typeof rest[index] === 'function') {
-                complete = rest[index];
-            }
-        }
 
-        var processedProps = (function () {
-            var processedProps = {};
-            for (var prop in props) {
-                if (typeof props[prop] === 'number' || /[-]?(\d+|\d*\.\d*)/.test(props[prop])) {
-                    // 统一去掉单位
-                    processedProps[prop] = parseFloat(props[prop]);
-                    
-                    // prop 不属于 CSS3 transform 函数时正常处理
-                    if (!(transform.all.indexOf(prop) + 1)) {
-                        original[prop] = parseFloat(getStyle(ele, prop));
-                    } 
+            var count = 0;
+            var during = Math.ceil(400 / 16.67); // 默认为 400ms，每 16.67ms 每帧
+            var original = {};
+            var fx = Math.TWEEN.linear;
+            var complete = null;
+
+            // 提取函数的 rest 参数 
+            for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+                rest[_key2 - 2] = arguments[_key2];
+            }
+
+            // 智能解析 rest 参数 
+            for (var index in rest) {
+                if (typeof rest[index] === 'number' && rest[index] > 0) {
+                    during = Math.ceil(rest[index] / 16.67);
                 }
-                // backgroundSize 可能是百分数
-                if (prop === 'backgroundSize') {
-                    var backgroundSize = getStyle(ele, prop);
-                    // backgroundSize 的原始值可能是 auto
-                    if (backgroundSize === 'auto') {
-                        original[prop] = 100;
-                    } else {
-                        original[prop] = parseFloat(backgroundSize.replace('%', ''));
+                if (typeof rest[index] === 'string' && rest[index] in Math.TWEEN) {
+                    fx = Math.TWEEN[rest[index]];
+                }
+                if (typeof rest[index] === 'function') {
+                    complete = rest[index];
+                }
+            }
+
+            // 解析 props 对象，构建终点 CSS 属性对象，同时计算获取原始 CSS 属性对象 
+            var processedProps = (function () {
+                var processedProps = {};
+                for (var prop in props) {
+                    if (typeof props[prop] === 'number' || /[-]?(\d+|\d*\.\d*)/.test(props[prop])) {
+                        // 统一去掉单位
+                        processedProps[prop] = parseFloat(props[prop]);
+                        
+                        // prop 不属于 CSS3 transform 函数时正常处理
+                        if (!(transform.all.indexOf(prop) + 1)) {
+                            original[prop] = parseFloat(getStyle(ele, prop));
+                        } 
                     }
-                    processedProps[prop] = props[prop].toString().indexOf('%') + 1 ? parseFloat(props[prop].replace('%', '')) : parseFloat(props[prop]) * 100;
+                    // backgroundSize 可能是百分数
+                    if (prop === 'backgroundSize') {
+                        var backgroundSize = getStyle(ele, prop);
+                        // backgroundSize 的原始值可能是 auto
+                        if (backgroundSize === 'auto') {
+                            original[prop] = 100;
+                        } else {
+                            original[prop] = parseFloat(backgroundSize.replace('%', ''));
+                        }
+                        processedProps[prop] = props[prop].toString().indexOf('%') + 1 ? parseFloat(props[prop].replace('%', '')) : parseFloat(props[prop]) * 100;
+                    }
+                    // 针对 CSS3 transform 各个转换函数做特殊处理
+                    if (transform.all.indexOf(prop) + 1) {
+                        var transformStyle = (getStyle(ele, 'transform') || '').replace(/\)/g, '').split(/\(|\s+/);
+                        var index = transformStyle.indexOf(prop);
+                        original[prop] = parseFloat(transformStyle[index + 1]) || (prop.indexOf('scale') + 1 ? 1 : 0);
+                    }
+                } 
+
+                return processedProps;
+            })();
+
+            function main() {
+                count++;
+                var step = {};
+                // 计算获取每一步的 CSS 属性值对象 
+                for (var _prop in processedProps) {
+                    step[_prop] = fx(count, original[_prop], processedProps[_prop] - original[_prop], during);
                 }
-                // 针对 CSS3 transform 各个转换函数做特殊处理
-                if (transform.all.indexOf(prop) + 1) {
-                    var transformStyle = (getStyle(ele, 'transform') || '').replace(/\)/g, '').split(/\(|\s+/);
-                    var index = transformStyle.indexOf(prop);
-                    original[prop] = parseFloat(transformStyle[index + 1]) || (prop.indexOf('scale') + 1 ? 1 : 0);
+
+                changeStyle(ele, step);
+                
+                if (count < during) {
+                    requestAnimationFrame(main);
                 }
-            } 
-
-            return processedProps;
-        })();
-
-        function main() {
-            start++;
-            var step = {};
-            for (var _prop in processedProps) {
-                step[_prop] = fx(start, original[_prop], processedProps[_prop] - original[_prop], during);
+                if (count === during && typeof complete === 'function') {
+                    complete();
+                }
             }
-            changeStyle(ele, step);
-            if (start < during) {
-                requestAnimationFrame(main);
+            main();
+        };
+
+        Move.scroll = function(target) {
+            var count = 0;
+            var during = Math.ceil(400 / 16.67); // 默认为 400ms, 16.67ms 每帧
+            var original = document.body.scrollTop || window.scrollY;
+
+            var fx = Math.TWEEN.linear;
+            var complete = null;
+
+            for (var _len1 = arguments.length, rest = Array(_len1 > 1 ? _len1 - 1 : 0), _key1 = 1; _key1 < _len1; _key1++) {
+                rest[_key1 - 1] = arguments[_key1];
             }
-            if (start === during && typeof complete === 'function') {
-                complete();
+
+            for (var index in rest) {
+                if (typeof rest[index] === 'number') {
+                    during = Math.ceil(rest[index] / 16.67);
+                }
+                if (typeof rest[index] === 'string' && rest[index] in Math.TWEEN) {
+                    fx = Math.TWEEN[rest[index]];
+                }
+                if (typeof rest[index] === 'function') {
+                    complete = rest[index];
+                }
             }
-        }
 
-        main();
-    }
-
-    move.scroll = function(target) {
-        var start = 0;
-        var during = Math.ceil(400 / 16.67); // 默认为 400ms，每 16.67ms 每帧
-        var original = document.body.scrollTop || window.scrollY;
-
-        var fx = Math.TWEEN.linear;
-        var complete = null;
-
-        for (var _len1 = arguments.length, rest = Array(_len1 > 1 ? _len1 - 1 : 0), _key1 = 1; _key1 < _len1; _key1++) {
-            rest[_key1 - 1] = arguments[_key1];
-        }
-
-        for (var index in rest) {
-            if (typeof rest[index] === 'number') {
-                during = Math.ceil(rest[index] / 16.67);
+            function main() {
+                count++;
+                var step = fx(count, original, target - original, during);
+                if (document.body.scrollTop + 1) {
+                    document.body.scrollTop = step;
+                } else {
+                    window.scrollY = step;
+                }
+                if (count < during) {
+                    requestAnimationFrame(main);
+                }
+                if (count === during && typeof complete === 'function') {
+                    complete();
+                }
             }
-            if (typeof rest[index] === 'string' && rest[index] in Math.TWEEN) {
-                fx = Math.TWEEN[rest[index]];
-            }
-            if (typeof rest[index] === 'function') {
-                complete = rest[index];
-            }
-        }
 
-        function main() {
-            start++;
-            var step = fx(start, original, target - original, during);
-            if (document.body.scrollTop + 1) {
-                document.body.scrollTop = step;
+            main();
+        };
+
+        Move.each = function(eles, props) {
+            for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+                rest[_key2 - 2] = arguments[_key2];
+            }
+            // 剔出回调函数
+            // 当传入了多个回调函数时，只会取最后一个
+            var complete = null;
+            var count = 0;
+            for (var i in rest) {
+                if (typeof rest[i] === 'function') {
+                    complete = rest.splice(i, 1)[0];
+                }
+            }
+            if (eles.length >= 1) {
+                var eleArr = Array.prototype.slice.call(eles);
+                for (var j in eleArr) {
+                    Move.apply(null, [eleArr[j], props].concat(rest).concat(function() {
+                        count++;
+                        // 只有当每个元素的动画都执行完成时才能执行回调函数
+                        if (count === eles.length && typeof complete === 'function') {
+                            complete();
+                        }
+                    }));
+                }
+            } else if (eles) {
+                Move.apply(null, [eles, props].concat(rest).concat(complete));
             } else {
-                window.scrollY = step;
+                return false;
             }
-            if (start < during) {
-                requestAnimationFrame(main);
-            }
-            if (start === during && typeof complete === 'function') {
-                complete();
-            }
-        }
+        };
 
-        main();
-    };
-
-    move.each = function(eles, props) {
-        for (var _len2 = arguments.length, rest = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
-            rest[_key2 - 2] = arguments[_key2];
-        }
-        // 剔出回调函数
-        // 当传入了多个回调函数时，只会取最后一个
-        var complete = null;
-        var start = 0;
-        for (var i in rest) {
-            if (typeof rest[i] === 'function') {
-                complete = rest.splice(i, 1)[0];
-            }
-        }
-        if (eles.length >= 1) {
-            var eleArr = Array.prototype.slice.call(eles);
-            for (var j in eleArr) {
-                move.apply(null, [eleArr[j], props].concat(rest).concat(function() {
-                    start++;
-                    // 只有当每个元素的动画都执行完成时才能执行回调函数
-                    if (start === eles.length && typeof complete === 'function') {
-                        complete();
-                    }
-                }));
-            }
-        } else if (eles) {
-            return move.apply(null, [eles, props].concat(rest).concat(complete));
-        } else {
-            return false;
-        }
-        
-    };
-
-    return move;
-})(window, undefined);
-
-// 用法：move(element, propsObject[, duration][, fx][, completeCallback])
-// move($('#box'), {opacity: 0, width:'500px'}, 10000, 'easeInOutSine', function(){console.log('done')})
+        return Move;
+    })();
+    window.move = move;
+    // 用法：move(element, propsObject[, duration][, fx][, completeCallback])
+    // move($('#box'), {opacity: 0, width:'500px'}, 10000, 'easeInOutSine', function(){console.log('done')})
+})(window);
