@@ -14,12 +14,12 @@
 对可选参数的先后顺序无要求，但对数据类型有要求。
 
 ### element
-Type：`HTMLElement`
+* Type: `HTMLElement`
 
 需要添加动画的 DOM 元素
 
 ### props
-Type：`Object`
+* Type：`Object`
 
 样式配置对象，支持大部分动画属性（自动补全、纠正单位），例如：
 ```javascript
@@ -49,7 +49,6 @@ move(document.body, {
 
 ### complete
 * Type：`Fucntion`
-* Default: `null`
 
 动画完毕时的回调函数，**可以借助回调函数实现链式动画**。
 
