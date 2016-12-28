@@ -19,7 +19,7 @@
 需要添加动画的 DOM 元素
 
 ### props
-* Type：`Object`
+* Type: `Object`
 
 样式配置对象，支持大部分动画属性（自动补全、纠正单位），例如：
 ```javascript
@@ -37,18 +37,18 @@ move(document.body, {
 > 查看支持哪些属性，请去往 [Demo](http://yangfch3.com/move.js/) 和 [Demo - CSS3 动画演示](http://yangfch3.com/move.js/index_css3.html)。
 
 ### duration
-* Type：`Number`
+* Type: `Number`
 * Default: 400
 
 ### fx
-* Type：`String`
+* Type: `String`
 * Default: `linear`
 
 缓动函数名，默认为匀速线性变化，所有支持的缓动函数名称见：[http://easings.net/zh-cn](http://easings.net/zh-cn)
 > 注：缓动函数全部存储在 Math.TWEEN 属性对象上，打开控制台打印 Math.TWEEN 查看详情。
 
 ### complete
-* Type：`Fucntion`
+* Type: `Fucntion`
 
 动画完毕时的回调函数，**可以借助回调函数实现链式动画**。
 
