@@ -34,21 +34,22 @@ move(document.body, {
     translateX: 300
 });
 ```
-> 查看支持哪些属性，请去往 [Demo](http://yangfch3.com/move.js/) 和 [Demo - CSS3 动画演示](http://yangfch3.com/move.js/)。
+> 查看支持哪些属性，请去往 [Demo](http://yangfch3.com/move.js/) 和 [Demo - CSS3 动画演示](http://yangfch3.com/move.js/index_css3.html)。
 
 ### duration
-Type：`Number`
-
-动画耗时，默认为 400ms
+* Type：`Number`
+* Default: 400
 
 ### fx
-Type：`String`
+* Type：`String`
+* Default: `linear`
 
 缓动函数名，默认为匀速线性变化，所有支持的缓动函数名称见：[http://easings.net/zh-cn](http://easings.net/zh-cn)
 > 注：缓动函数全部存储在 Math.TWEEN 属性对象上，打开控制台打印 Math.TWEEN 查看详情。
 
 ### complete
-Type：`Fucntion`
+* Type：`Fucntion`
+* Default: `null`
 
 动画完毕时的回调函数，**可以借助回调函数实现链式动画**。
 
@@ -56,16 +57,16 @@ Type：`Fucntion`
 有两种方式帮助我们实现多个元素同时运动
 ```javascript
 // 方式1：#a, #b, #c 同时运动
-move($('#a'), {width: 300});
-move($('#b'), {width: 1000});
-move($('#c'), {opacity: .5});
+move('#a', {width: 300});
+move('#b', {width: 1000});
+move('#c', {opacity: .5});
 ```
 
 ```javascript
 // 方式2：类名为 .box 所有元素同时运动
 move.each(document.getElementsByClassName('.box'), {width: 1000, opacity: 0.5});
 // 支持回调
-move.each($$('div'), {opacity: 0.5}, 1000, function() {
+move.each($('div'), {opacity: 0.5}, 1000, function() {
   move.each(document.getElementsByTagName('DIV'), {height: 100, opacity: 1, marginTop: 20}, 1000)
 });
 ```
@@ -76,18 +77,19 @@ move.each($$('div'), {opacity: 0.5}, 1000, function() {
 1. 框架**只获取与解析你在 DOM 元素的 style 属性内声明的 transform 属性**，写在 CSS 文件内的 transform 属性不获取
 2. 支持的变形函数：`translateX` `translateY` `translateZ` `rotate` `rotateX` `rotateY` `rotateZ` `scale` `scaleX` `scaleY` `scaleZ` `skew` `skewX` `skewY` `perspective`
 
-> 现代浏览器获取计算后的 transform 时返回的是一个 matrix() 函数，处理提取起来比较困难，所以本框架默认支持提取与解析 DOM 元素 style 属性内的 transform 属性。所以，如果你对 CSS3 动画及其性能有较高要求，请直接使用 CSS3 原生动画。
-> IE9 的 transform 无法正常回去，故不考虑支持。
+> 现代浏览器获取计算后的 transform 时返回的是一个 matrix() 函数，处理提取起来比较困难，运动框架默认支持提取与解析 DOM 元素 style 属性内的 transform 字符值。所以，如果你对 CSS3 动画及其性能有较高要求，请直接使用 CSS3 原生动画。
+>
+> IE9 的 transform 样式无法正常获取，故不考虑支持。
 
 ## 页面滚动动画：move.scroll(target[, duration][, fx][, completeCallback])
-例如：滚动至页面顶部
+例如：滚动至页面**顶部**
 ```javascript
 move.scroll(0, 1000, 'easeInQuad', function() {
     console.log('done!');
 })
 ```
 
-例如：滚动至页面底部
+例如：滚动至页面**底部**
 ```javascript
 move.scroll(document.body.scrollHeight, 'easeInOutExpo');
 ```
@@ -101,4 +103,4 @@ move.scroll(document.body.scrollHeight, 'easeInOutExpo');
 - [x] 支持多个元素同时运动 `move.each()`
 
 ---
-如果这个运动框架帮助你更高效地开发，希望你能回来这里点个 Star！
+如果这个运动框架帮助了你的开发，希望你能回来这里点个 Star！
